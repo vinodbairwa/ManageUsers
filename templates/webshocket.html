@@ -1,0 +1,364 @@
+<!--  <html>
+    <head>
+        <title>WebSocket Test</title>
+        <style>
+            body { font-family: Arial, sans-serif; }
+            #key-values { margin-top: 20px; }
+            .key-value { margin-bottom: 5px; }
+            #subscribe-btn { margin-bottom: 20px; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+        </style>
+    </head>
+    <body>
+        <h1>WebSocket Test</h1>
+        <button id="subscribe-btn">Subscribe</button>
+        <div id="key-values"></div>
+        <script>
+            let ws;
+            const subscribeButton = document.getElementById("subscribe-btn");
+            const keyValueDiv = document.getElementById("key-values");
+
+            subscribeButton.addEventListener("click", () => {
+                subscribeButton.style.display = "none";  // Hide button
+                ws = new WebSocket("ws://localhost:8000/ws");
+
+                ws.onopen = () => {
+                    console.log("Connected to WebSocket");
+                    ws.send("subscription request");  // Send subscription request
+                };
+
+                ws.onmessage = (event) => {
+                    console.log("Message from server:", event.data);
+                    const data = JSON.parse(event.data);
+                    keyValueDiv.innerHTML = ''; // Clear previous values
+                    for (const [key, value] of Object.entries(data)) {
+                        const p = document.createElement("p");
+                        p.classList.add("key-value");
+                                                       p.innerText = `${key}: ${value}`;
+                        keyValueDiv.appendChild(p);
+                    }
+                };
+                ws.onclose = () => {
+                    console.log("Disconnected from WebSocket");
+                };
+            });
+        </script>
+    </body>
+</html> -->
+<!-- __________________________________________________________________________________________________________ -->
+<!-- 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Subscription Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #messages {
+            margin-top: 20px;
+        }
+        .message {
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid #ccc;
+        }
+        #subscribe-buttons {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Subscription Example</h1>
+
+    <div>
+        <label for="subscribeKey">Subscribe to a key: </label>
+        <input type="text" id="subscribeKey" placeholder="Enter key (e.g., key1)" />
+        <button id="subscribeButton">Subscribe</button>
+    </div>
+
+    <div id="messages">
+        <h2>Received Messages:</h2>
+        <div id="messageContainer"></div>
+    </div>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:8000/ws");
+        const messageContainer = document.getElementById("messageContainer");
+        const subscribeButton = document.getElementById("subscribeButton");
+        const subscribeKeyInput = document.getElementById("subscribeKey");
+
+        // When the WebSocket connection is open
+        socket.onopen = function () {
+            console.log("Connected to WebSocket server");
+        };
+
+        // When a message is received from the WebSocket
+        socket.onmessage = function (event) {
+            console.log("Message received:", event.data);
+
+            // Append the received message to the message container
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+            messageDiv.textContent = event.data;
+            messageContainer.appendChild(messageDiv);
+        };
+
+        // When the WebSocket connection is closed
+        socket.onclose = function () {
+            console.log("Disconnected from WebSocket server");
+        };
+
+        // When an error occurs with the WebSocket
+        socket.onerror = function (error) {
+            console.error("WebSocket error:", error);
+        };
+
+        // Handle the subscribe button click
+        subscribeButton.onclick = function () {
+            const keyToSubscribe = subscribeKeyInput.value.trim();
+            if (keyToSubscribe) {
+                // Send the subscription request to the WebSocket server
+                console.log(`Subscribing to key: ${keyToSubscribe}`);
+                socket.send(`subscribe:${keyToSubscribe}`);
+
+                // Clear the input field
+                subscribeKeyInput.value = "";
+            } else {
+                alert("Please enter a key to subscribe to.");
+            }
+        };
+    </script>
+</body>
+</html>
+
+ -->
+
+
+ <!-- ____________________________________________________________________________ -->
+
+
+<!-- 
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Multiple Subscription Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #messages {
+            margin-top: 20px;
+        }
+        .message {
+            margin: 5px;
+            padding: 5px;
+            border: 1px solid #ccc;
+        }
+        #subscribe-buttons {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Multiple Subscription Example</h1>
+
+    <div>
+        <label for="subscribeKeys">Subscribe to keys (comma-separated): </label>
+        <input type="text" id="subscribeKeys" placeholder="Enter keys (e.g., key1,key2,key3)" />
+        <button id="subscribeButton">Subscribe</button>
+    </div>
+
+    <div id="messages">
+        <h2>Received Messages:</h2>
+        <div id="messageContainer"></div>
+    </div>
+
+    <script>
+        const socket = new WebSocket("ws://localhost:8000/ws");
+        const messageContainer = document.getElementById("messageContainer");
+        const subscribeButton = document.getElementById("subscribeButton");
+        const subscribeKeysInput = document.getElementById("subscribeKeys"); -->
+
+        <!-- // When the WebSocket connection is open -->
+        <!-- socket.onopen = function () {
+            console.log("Connected to WebSocket server");
+        };
+
+        // When a message is received from the WebSocket
+        socket.onmessage = function (event) {
+            console.log("Message received:", event.data); -->
+
+            <!-- // Append the received message to the message container -->
+            <!-- const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+            messageDiv.textContent = event.data;
+            messageContainer.appendChild(messageDiv);
+        }; -->
+
+        <!-- // When the WebSocket connection is closed -->
+        <!-- socket.onclose = function () {
+            console.log("Disconnected from WebSocket server");
+        }; -->
+
+        <!-- // When an error occurs with the WebSocket -->
+        <!-- socket.onerror = function (error) {
+            console.error("WebSocket error:", error);
+        }; -->
+
+        <!-- // Handle the subscribe button click -->
+        <!-- subscribeButton.onclick = function () {
+            const keysToSubscribe = subscribeKeysInput.value.trim();
+            if (keysToSubscribe) { -->
+                <!-- // Split the input into individual keys and send them as a subscription request -->
+                <!-- const keysArray = keysToSubscribe.split(",").map(key => key.trim()); -->
+
+                <!-- // Send the subscription request to the WebSocket server -->
+                <!-- keysArray.forEach(key => {
+                    console.log(`Subscribing to key: ${key}`);
+                    socket.send(`subscribe:${key}`);
+                }); -->
+
+                <!-- // Clear the input field -->
+                <!-- subscribeKeysInput.value = "";
+            } else {
+                alert("Please enter keys to subscribe to.");
+            }
+        };
+    </script> -->
+<!-- </body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Subscription Demo</title>
+</head>
+<body>
+    <h1>WebSocket Subscription Demo</h1>
+
+    <div>
+        <label for="key">Subscription Key:</label>
+        <input type="text" id="key" placeholder="Enter subscription key">
+        <button id="subscribe">Subscribe</button>
+    </div>
+
+    <h2>Messages</h2>
+    <div id="messages" style="border: 1px solid #ccc; padding: 10px; width: 1200px; height: 400px; overflow-y: auto;"></div>
+    <script>
+        // Establish WebSocket connection
+        let socket = new WebSocket("ws://127.0.0.1:8000/ws");
+    
+        // Handle WebSocket connection open
+        socket.onopen = () => {
+            console.log("Connected to WebSocket server");
+        };
+    
+        // Handle incoming messages
+        socket.onmessage = (event) => {
+            const messagesDiv = document.getElementById("messages");
+            const newMessage = document.createElement("div");
+            newMessage.textContent = `Received: ${event.data}`;
+            messagesDiv.appendChild(newMessage);
+        };
+    
+        // Handle WebSocket errors
+        socket.onerror = (error) => {
+            console.error("WebSocket error:", error);
+        };
+    
+        // Handle WebSocket close
+        socket.onclose = () => {
+            console.log("WebSocket connection closed");
+        };
+    
+        // Subscribe to a specific key
+        document.getElementById("subscribe").addEventListener("click", () => {
+            const key = document.getElementById("key").value;
+            if (!key) {
+                alert("Please enter a key to subscribe!");
+                return;
+            }
+            socket.send(`subscribe:${key}`);
+            console.log(`Subscribed to key: ${key}`);
+        });
+    </script>
+    
+</body>
+</html> 
+
+
+
+
+
+
+
+
+<!-- 
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client</title>
+</head>
+<body>
+    <h1>WebSocket Example</h1>
+    <div id="messages"></div>
+
+    <button onclick="subscribeToKeys()">Subscribe to Keys</button>
+
+    <script>
+        // Connect to the WebSocket server
+        const socket = new WebSocket('ws://127.0.0.1:8000/ws');
+
+        // Handle incoming messages
+        socket.onmessage = function(event) {
+            const message = event.data;
+            console.log('Received:', message);
+            displayMessage(message);
+        };
+
+        // Handle errors
+        socket.onerror = function(error) {
+            console.error('WebSocket error:', error);
+        };
+
+        // Handle connection open
+        socket.onopen = function() {
+            console.log('Connected to the WebSocket server');
+            document.getElementById('messages').innerHTML = 'Connected to the WebSocket server';
+        };
+
+        // Handle connection close
+        socket.onclose = function() {
+            console.log('Disconnected from the WebSocket server');
+            document.getElementById('messages').innerHTML = 'Disconnected from the WebSocket server';
+        };
+
+        // Function to display messages on the webpage
+        function displayMessage(message) {
+            const messagesDiv = document.getElementById('messages');
+            const newMessage = document.createElement('p');
+            newMessage.textContent = message;
+            messagesDiv.appendChild(newMessage);
+        }
+
+        // Function to subscribe to keys
+        function subscribeToKeys() {
+            const keys = ['key1', 'key2', 'key3'];  // Replace with your actual keys
+            const message = `subscribe:${JSON.stringify(keys)}`;
+            console.log('Sending subscription message:', message);
+            socket.send(message);
+        }
+    </script>
+</body>
+</html> -->

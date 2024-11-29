@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Dashboard</title>
+    <style>
+      /* Global Styles */
+      body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 32px;
+            color: #2C3E50;
+        }
+
+        /* Navigation Bar */
+        #nav {
+            background-color: #34495E;
+            padding: 15px;
+            text-align: center;
+        }
+
+        #nav nav a {
+            text-decoration: none;
+            color: white;
+            margin: 0 15px;
+            font-size: 18px;
+            padding: 10px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #nav nav a:hover {
+            background-color: #2C3E50;
+        }
+
+        /* Logout button styling */
+        #logoutButton {
+            background-color: #E74C3C;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #logoutButton:hover {
+            background-color: #C0392B;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #2C3E50;
+            color: white;
+        }
+
+        td {
+            background-color: #ECF0F1;
+        }
+
+        /* Hover effect for rows */
+        tr:hover {
+            background-color: #D5DBDB;
+        }
+
+        /* Responsive table */
+        @media (max-width: 768px) {
+            table {
+                width: 100%;
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            #logoutButton {
+                width: 100%;
+                padding: 12px;
+                font-size: 18px;
+            }
+        }
+
+        /* Center content */
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome Super Admin Dashboard</h1>
+
+        <!-- Navigation Bar -->
+        <div id="nav">
+            <nav>
+                <a href="{{url_for('permission')}}">Manage Permissions</a>
+                <a href="{{url_for('roles')}}">Manage Roles</a>
+                <a href="{{url_for('get_user_role_form')}}">User Roles</a>
+                <a href="{{url_for('get_web')}}">Subscription</a>
+                <a href="{{url_for('get_permission_role_form')}}">Permission Assign</a>
+                <a href="{{url_for('updateItself_load')}}">Edit Super Admin</a>
+                <button id="logoutButton">Logout</button>
+            </nav>
+        </div>
+
+        <!-- Table to display users data -->
+        <div class="content-wrapper">
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Roles</th>
+                        <th>Permissions</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be injected here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="update-container"></div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Function to fetch user data and populate table
+            function fetchUserData() {
+                const token = localStorage.getItem("access_token");
+        
+                if (!token) {
+                    alert("Authorization token not found!");
+                    return;
+                }
+        
+                fetch("/SuperAdminDeshbord_change", {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector("#users-table tbody");
+                    tableBody.innerHTML = ""; // Clear existing rows
+        
+                    data.users_data.forEach(user => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${user.user_id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.roles.join(", ")}</td>
+                            <td>${user.permissions.join(", ")}</td>
+                            <td><a href="#"" class="btn-edit" data-userid="${user.user_id}" >Edit</a></td>
+                            <td><a href="#" class="btn-delete" data-username="${user.username}">Delete</a></td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+        
+                    // Attach event listeners after populating rows
+                    attachEditButtonListeners();
+                    attachDeleteButtonListeners();
+                })
+                .catch(error => {
+                    console.error("Error fetching user data:", error);
+                });
+            }
+             
+ //________________________  DELETE_______________________________________________________________________________ 
+            // Function to handle delete button clicks
+            function attachDeleteButtonListeners() {
+                const deleteButtons = document.querySelectorAll(".btn-delete");
+        
+                deleteButtons.forEach(button => {
+                    button.addEventListener("click", function(event) {
+                        event.preventDefault(); // Prevent default anchor behavior
+                        const username = this.dataset.username;
+                        const token = localStorage.getItem("access_token");
+        
+                        if (!token) {
+                            alert("Authorization token not found!");
+                            return;
+                        }
+        
+                        if (confirm(`Are you sure you want to delete the user "${username}"?`)) {
+                            fetch(`/users_delete/${username}`, {
+                                method: "GET", // Adjust to DELETE if supported
+                                headers: {
+                                    "Authorization": `Bearer ${token}`,
+                                    "Content-Type": "application/json",
+                                },
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    return response.json().then(error => {
+                                        throw new Error(error.detail || "Error deleting user");
+                                    });
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                alert(`${username} deleted successfully!`);
+                                fetchUserData(); // Refresh table after deletion
+                            })
+                            .catch(error => {
+                                console.error("Error deleting user:", error);
+                                alert(`Failed to delete user: ${error.message}`);
+                            });
+                        }
+                    });
+                });
+            }
+        
+        
+ //________________________________________________________- UPDATE_____________________________________________           
+            // Function to handle edit button clicks
+//     function attachEditButtonListeners() {
+//     const editButtons = document.querySelectorAll(".btn-edit");
+
+//     editButtons.forEach(button => {
+//         button.addEventListener("click", function(event) {
+//             event.preventDefault(); // Prevent default anchor behavior
+
+//             console.log("Button Element:", this); // Debugging
+//             const userId = this.dataset.userid || this.getAttribute("data-userid"); // Fallback
+//             console.log("User ID:", userId);
+
+//             if (!userId) {
+//                 alert("User ID not found!");
+//                 return;
+//             }
+
+//             const token = localStorage.getItem("access_token");
+//             if (!token) {
+//                 alert("Authorization token not found!");
+//                 return;
+//             }
+
+//             // Make the fetch request to the API
+//             fetch(`/SuperAdmin/update/${userId}`, {
+//                 method: "GET",
+//                 headers: {
+//                     "Authorization": `Bearer ${token}`,
+//                 },
+//             })
+//             .then(response => {
+//                 if (!response.ok) {
+//                     return response.text().then(err => {
+//                         throw new Error(err || "Failed to load the update page");
+//                     });
+//                 }
+//                 return response.text(); // Assuming the response is HTML content
+//             })
+//             .then(html => {
+//                 // Log the fetched HTML to debug
+//                 console.log("Fetched HTML:", html);
+
+//                 // Find the container where you want to insert the HTML (ensure the element exists)
+//                 const updateContainer = document.getElementById("update-container");
+
+//                 if (updateContainer) {
+//                     updateContainer.innerHTML = html; // Insert the fetched HTML content
+//                 } else {
+//                     alert("Update container not found in the DOM!");
+//                 }
+//             })
+//             .catch(error => {
+//                 console.error("Error fetching the update form:", error);
+//                 alert("Failed to load the update page: " + error.message);
+//             });
+//         });
+//     });
+// }
+
+
+
+
+
+function attachEditButtonListeners() {
+    const editButtons = document.querySelectorAll(".btn-edit");
+
+    editButtons.forEach(button => {
+        button.addEventListener("click", function(event) {
+            event.preventDefault(); // Prevent default anchor behavior
+
+            console.log("Button Element:", this); // Debugging
+            const userId = this.dataset.userid || this.getAttribute("data-userid"); // Fallback
+            console.log("User ID:", userId);
+
+            if (!userId) {
+                alert("User ID not found!");
+                return;
+            }
+
+            const token = localStorage.getItem("access_token");
+            if (!token) {
+                alert("Authorization token not found!");
+                return;
+            }
+
+            // Redirect to the update page and include the token in headers
+            fetch(`/SuperAdmin/update/${userId}`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`, // Attach the token here
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(err => {
+                        throw new Error(err || "Failed to load the update page");
+                    });
+                }
+                return response.text(); // Assuming the response is HTML content
+            })
+            .then(html => {
+                // We can either redirect to a new page or inject the HTML into an existing container
+                // If redirecting to the new page
+                window.location.href = `/SuperAdmin/update/${userId}`;
+            })
+            .catch(error => {
+                console.error("Error fetching the update form:", error);
+                alert("Failed to load the update page: " + error.message);
+            });
+        });
+    });
+}
+
+
+            // Fetch and display user data on page load
+            fetchUserData();
+        });
+        </script>
+        <!-- D:\projects\fastapi\static\button.js -->
+        <script src="static/button.js"></script>
+
+</body>
+</html>

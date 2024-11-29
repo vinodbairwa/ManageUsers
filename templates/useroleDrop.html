@@ -1,0 +1,207 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assign Role to User</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: linear-gradient(to right, #2C3E50, #3498DB);
+            color: #333;
+        }
+
+        .assign-role-container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .assign-role-container label {
+            font-size: 16px;
+            color: #333;
+            text-align: left;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        .assign-role-container input, .assign-role-container select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .assign-role-container input:focus, .assign-role-container select:focus {
+            border-color: #3498DB;
+            outline: none;
+        }
+
+        .assign-role-container button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498DB;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .assign-role-container button:hover {
+            background-color: #2980B9;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #28a745;
+        }
+
+        .message.error {
+            color: #dc3545;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .assign-role-container {
+                padding: 30px;
+                width: 90%;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .assign-role-container input, .assign-role-container select {
+                font-size: 14px;
+            }
+
+            .assign-role-container button {
+                font-size: 14px;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="assign-role-container">
+        <h1>Assign Role to User</h1>
+
+        <!-- Form for assigning a role to a user -->
+        <form id="assignRoleForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <br>
+            <label for="roleDropdown">Select Role:</label>
+            <select id="roleDropdown" name="role_name" required>
+                <option value="" disabled selected>-- Select a Role --</option>
+            </select>
+            <br>
+            <button type="submit">Assign Role</button>
+        </form>
+
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        // Fetch roles and populate the dropdown
+        document.addEventListener('DOMContentLoaded', async () => {
+            const roleDropdown = document.getElementById('roleDropdown');
+            
+            // Fetch roles and populate the dropdown
+            async function fetchRoles() {
+                try {
+                    const token = localStorage.getItem('access_token');
+                    if (!token) {
+                        alert('Please log in to fetch roles.');
+                        return;
+                    }
+                    const response = await fetch('/SuperAdmin_get_roles', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+
+                    if (response.ok) {
+                        const roles = await response.json();
+                        roles.forEach(role => {
+                            const option = document.createElement('option');
+                            option.value = role.role_name;
+                            option.textContent = role.role_name;
+                            roleDropdown.appendChild(option);
+                        });
+                    } else {
+                        alert('Failed to fetch roles');
+                    }
+                } catch (error) {
+                    console.error('Error fetching roles:', error);
+                }
+            }
+            fetchRoles();
+        });
+
+        // Handle form submission to assign role
+        document.getElementById('assignRoleForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const roleName = document.getElementById('roleDropdown').value;
+            const token = localStorage.getItem('access_token');
+            
+            if (!token) {
+                document.getElementById('message').innerHTML = "Error: Token is missing. Please log in.";
+                return;
+            }
+
+            try {
+                const response = await fetch('/user_role/', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `username=${encodeURIComponent(username)}&role_name=${encodeURIComponent(roleName)}`
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    document.getElementById('message').innerHTML = "Role assigned successfully!";
+                } else {
+                    const errorData = await response.json();
+                    document.getElementById('message').innerHTML = "Error: " + errorData.detail;
+                }
+            } catch (error) {
+                console.error('Request failed:', error);
+                document.getElementById('message').innerHTML = "Error: Request failed.";
+            }
+        });
+    </script>
+
+</body>
+</html>

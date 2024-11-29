@@ -1,0 +1,160 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #keys {
+            margin-top: 20px;
+        }
+        .key {
+            margin: 5px 0;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Real-Time Key-Value Updates</h1>
+    <div>
+        <label for="subscribeKey">Subscribe to key:</label>
+        <input type="text" id="subscribeKey" placeholder="Enter key name (e.g., key1)">
+        <button onclick="subscribeToKey()">Subscribe</button>
+    </div>
+
+    <div id="keys">
+        <h2>Current Keys:</h2>
+        <div id="key-list"></div>
+    </div>
+
+    <script>
+        const ws = new WebSocket("ws://localhost:8000/ws");
+
+        // Display initial keys received from server
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            const keyList = document.getElementById("key-list");
+            keyList.innerHTML = "";
+            for (const key in data) {
+                const div = document.createElement("div");
+                div.classList.add("key");
+                div.innerHTML = `<strong>${key}:</strong> ${data[key]}`;
+                keyList.appendChild(div);
+            }
+        };
+
+        // Subscribe to a key
+        function subscribeToKey() {
+            const key = document.getElementById("subscribeKey").value;
+            if (key) {
+                ws.send(`subscribe:${key}`);
+            }
+        }
+
+        // Handle WebSocket connection opening
+        ws.onopen = () => {
+            console.log("Connected to WebSocket");
+        };
+
+        // Handle WebSocket errors
+        ws.onerror = (error) => {
+            console.error("WebSocket Error: ", error);
+        };
+
+        // Handle WebSocket connection closure
+        ws.onclose = () => {
+            console.log("Disconnected from WebSocket");
+        };
+    </script>
+</body>
+</html>
+
+
+
+<-------------------------------------------------------------------------------------------------------------------------- -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #messages {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+        .message {
+            margin-bottom: 10px;
+        }
+        input, button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Client</h1>
+    <div>
+        <label for="subscribeInput">Subscribe to keys (comma separated): </label>
+        <input type="text" id="subscribeInput" placeholder="e.g., key1, key2" />
+        <button onclick="subscribeToKeys()">Subscribe</button>
+    </div>
+
+    <div id="messages"></div>
+
+    <script>
+        // Open WebSocket connection
+        const ws = new WebSocket("ws://localhost:8000/ws");
+
+        ws.onopen = function() {
+            console.log("Connected to WebSocket server");
+        };
+
+        ws.onmessage = function (event) {
+            try {
+                // Attempt to parse the message as JSON
+                const message = JSON.parse(event.data);
+                console.log("Parsed JSON message:", message);
+        
+                const messageContainer = document.getElementById("messages");
+                const newMessage = document.createElement("div");
+                newMessage.classList.add("message");
+                newMessage.textContent = JSON.stringify(message, null, 2);
+                messageContainer.appendChild(newMessage);
+            } catch (error) {
+                // If it's not JSON, treat it as plain text
+                console.log("Plain text message received:", event.data);
+        
+                const messageContainer = document.getElementById("messages");
+                const newMessage = document.createElement("div");
+                newMessage.classList.add("message");
+                newMessage.textContent = event.data; // Display the plain text message
+                messageContainer.appendChild(newMessage);
+            }
+        };
+        
+        // Subscribe to keys when the button is clicked
+        function subscribeToKeys() {
+            const input = document.getElementById("subscribeInput").value;
+            const keys = input.split(",").map(key => key.trim()); // Split input by commas and trim spaces
+
+            if (keys.length > 0) {
+                const subscribeMessage = JSON.stringify(keys); // Convert to JSON format
+                ws.send(`subscribe:${subscribeMessage}`);
+                console.log(`Subscribed to keys: ${keys.join(", ")}`);
+            } else {
+                alert("Please enter some keys to subscribe.");
+            }
+        }
+    </script>
+</body>
+</html>

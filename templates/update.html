@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update User</title>
+</head>
+<style>
+    /* Global Styles */
+    body {
+        font-family: 'Arial', sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f7fc;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-image: linear-gradient(to right, #2C3E50, #3498DB);
+        color: #333;
+    }
+
+    .update-container {
+        background-color: #fff;
+        width: 100%;
+        max-width: 500px;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 28px;
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .update-container label {
+        font-size: 16px;
+        color: #333;
+        text-align: left;
+        display: block;
+        margin: 10px 0 5px;
+    }
+
+    .update-container input, .update-container select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 16px;
+        box-sizing: border-box;
+    }
+
+    .update-container input:focus, .update-container select:focus {
+        border-color: #3498DB;
+        outline: none;
+    }
+
+    .update-container button {
+        width: 100%;
+        padding: 12px;
+        background-color: #3498DB;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+    }
+
+    .update-container button:hover {
+        background-color: #2980B9;
+    }
+
+    .update-container .message {
+        margin-top: 20px;
+        font-size: 14px;
+        color: #28a745;
+    }
+
+    .update-container .error {
+        color: #dc3545;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 480px) {
+        .update-container {
+            padding: 30px;
+            width: 90%;
+        }
+
+        h1 {
+            font-size: 24px;
+        }
+
+        .update-container input, .update-container select {
+            font-size: 14px;
+        }
+
+        .update-container button {
+            font-size: 14px;
+        }
+    }
+</style>
+<body>
+   
+    <div class="update-container">
+        <h1>Update User</h1>
+
+        <!-- Form for updating user -->
+        <form id="updateForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" value="{{ username }}" required><br><br>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" value="{{ email }}" required><br><br>
+
+            <label for="roleDropdown">Select Role:</label>
+            <select id="roleDropdown" name="role" required>
+                <option value="" disabled selected>-- Select a Role --</option>
+            </select>
+            <br>
+
+            <button type="submit">Update</button>
+            <div class="message" id="successMessage" style="display: none;">User updated successfully!</div>
+            <div class="message error" id="errorMessage" style="display: none;">Error updating user. Please try again.</div>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const roleDropdown = document.getElementById('roleDropdown');
+            
+            // Fetch roles and populate the dropdown
+            async function fetchRoles() {
+                try {
+                    const token = localStorage.getItem('access_token');
+                    if (!token) {
+                        alert('Please log in to fetch roles.');
+                        return;
+                    }
+                    const response = await fetch('/SuperAdmin_get_roles', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    });
+
+                    if (response.ok) {
+                        const roles = await response.json();
+                        roles.forEach(role => {
+                            const option = document.createElement('option');
+                            option.value = role.role_name;
+                            option.textContent = role.role_name;
+                            roleDropdown.appendChild(option);
+                        });
+                    } else {
+                        alert('Failed to fetch roles');
+                    }
+                } catch (error) {
+                    console.error('Error fetching roles:', error);
+                }
+            }
+            fetchRoles();
+        });
+
+        // Function to handle form submission
+        document.getElementById('updateForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            // Get form data
+            const user_id = "{{ user_id }}";
+            console.log(user_id)  // Pass user_id from template context
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            const role = document.getElementById('roleDropdown').value;  // Ensure the correct name attribute
+
+            // Get the JWT token from localStorage
+            const token = localStorage.getItem('access_token');  // Adjust as needed
+
+            if (!token) {
+                alert('No valid token found!');
+                return;
+            }
+
+            try {
+                // Sending the data to the FastAPI endpoint
+                console.log("user Id",user_id)
+                console.log("role",role)
+                const response = await fetch(`/admin_update/${user_id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    
+                    body: new URLSearchParams({
+                        username: username,
+                        email: email,
+                        role: role,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('User updated successfully');
+                    // window.location.href = data.redirect_url || '/';  // Redirect as needed
+                } else {
+                    alert(data.detail || 'Failed to update user');
+                }
+            } catch (error) {
+                console.error('Error updating user:', error);
+                alert('Failed to update user.');
+            }
+        });
+    </script>
+</body>
+</html>

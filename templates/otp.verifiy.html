@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Verify OTP</title>
+</head>
+<body>
+    <h1>Verify OTP</h1>
+    <form action="/verify-otp/" method="post">
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email" required><br><br>
+
+        <label for="otp_code">Enter OTP:</label>
+        <input type="text" name="otp_code" id="otp_code" required><br><br>
+
+        <button type="submit">Verify OTP</button>
+    </form>
+
+    <!-- Display success or error messages here -->
+    {% if message %}
+    <p>{{ message }}</p>
+    {% endif %}
+</body>
+</html>

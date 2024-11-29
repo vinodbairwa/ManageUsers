@@ -1,0 +1,242 @@
+
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>Assign Permissions to Roles</title>
+     <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: linear-gradient(to right, #2C3E50, #3498DB);
+            color: #333;
+        }
+
+        .assign-permissions-container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .assign-permissions-container label {
+            font-size: 16px;
+            color: #333;
+            text-align: left;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        .assign-permissions-container select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .assign-permissions-container select:focus {
+            border-color: #3498DB;
+            outline: none;
+        }
+
+        .assign-permissions-container button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498DB;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .assign-permissions-container button:hover {
+            background-color: #2980B9;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #28a745;
+        }
+
+        .message.error {
+            color: #dc3545;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .assign-permissions-container {
+                padding: 30px;
+                width: 90%;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .assign-permissions-container select,
+            .assign-permissions-container button {
+                font-size: 14px;
+            }
+        }
+    </style>
+ </head>
+ <body>
+    
+    <div class="assign-permissions-container">
+        <h1>Assign Permissions to Roles</h1>
+
+        <!-- Assign Permissions Form -->
+        <form id="assignForm">
+            <label for="roleDropdown">Select Role:</label>
+            <select id="roleDropdown" name="role" required>
+                <option value="" disabled selected>-- Select a Role --</option>
+                <!-- Roles will be dynamically populated -->
+            </select>
+
+            <br><br>
+
+            <label for="permissionsList">Select Permissions:</label>
+            <select id="permissionsList" name="permissions" multiple required>
+                <!-- Permissions will be dynamically populated -->
+            </select>
+
+            <br><br>
+
+            <button type="button" id="assignButton">Assign Permissions</button>
+        </form>
+
+        <p id="message" class="message"></p>
+    </div>
+
+
+
+
+
+    
+     <script >document.addEventListener('DOMContentLoaded', async () => {
+        const roleDropdown = document.getElementById('roleDropdown');
+        const permissionsList = document.getElementById('permissionsList');
+        const assignButton = document.getElementById('assignButton');
+    
+        // Fetch roles and populate the dropdown
+        async function fetchRoles() {
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch('/SuperAdmin_get_roles', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+    
+                if (response.ok) {
+                    const roles = await response.json();
+                    roles.forEach(role => {
+                        const option = document.createElement('option');
+                        option.value = role.role_name;
+                        option.textContent = role.role_name;
+                        roleDropdown.appendChild(option);
+                    });
+                } else {
+                    alert('Failed to fetch roles');
+                }
+            } catch (error) {
+                console.error('Error fetching roles:', error);
+            }
+        }
+    
+        // Fetch permissions and populate the multi-select list
+        async function fetchPermissions() {
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch('/get_permissions', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+    
+                if (response.ok) {
+                    const permissions = await response.json();
+                    permissions.forEach(permission => {
+                        const option = document.createElement('option');
+                        option.value = permission.permission_name; // Use permission name as the value
+                        option.textContent = permission.permission_name;
+                        permissionsList.appendChild(option);
+                    });
+                } else {
+                    alert('Failed to fetch permissions');
+                }
+            } catch (error) {
+                console.error('Error fetching permissions:', error);
+            }
+        }
+    
+        // Assign permissions to the selected role
+        assignButton.addEventListener('click', async () => {
+            const selectedRole = roleDropdown.value;
+            const selectedPermissions = Array.from(permissionsList.selectedOptions).map(opt => opt.value);
+    
+            if (!selectedRole || selectedPermissions.length === 0) {
+                alert('Please select a role and at least one permission.');
+                return;
+            }
+    
+            try {
+                const token = localStorage.getItem('access_token');
+                const response = await fetch('/permission_roles_create/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({
+                        role_name: selectedRole,
+                        permission_names: selectedPermissions,
+                    }),
+                });
+    
+                if (response.ok) {
+                    alert('Permissions assigned successfully!');
+                    location.reload(); // Reload the page to refresh the form
+                } else {
+                    const error = await response.json();
+                    alert('Failed to assign permissions: ' + error.detail);
+                }
+            } catch (error) {
+                console.error('Error assigning permissions:', error);
+                alert('An error occurred while assigning permissions.');
+            }
+        });
+    
+        // Initial fetch of roles and permissions
+        fetchRoles();
+        fetchPermissions();
+    });
+    </script>
+ </body>
+ </html>
+ 

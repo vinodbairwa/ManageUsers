@@ -1,0 +1,258 @@
+
+
+
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Permission</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: linear-gradient(to right, #2C3E50, #3498DB);
+            color: #333;
+        }
+
+        .permissions-container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 600px;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h3 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .permissions-container label {
+            font-size: 16px;
+            color: #333;
+            text-align: left;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        .permissions-container input, .permissions-container select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .permissions-container input:focus, .permissions-container select:focus {
+            border-color: #3498DB;
+            outline: none;
+        }
+
+        .permissions-container button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498DB;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .permissions-container button:hover {
+            background-color: #2980B9;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #28a745;
+        }
+
+        .message.error {
+            color: #dc3545;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .permissions-container {
+                padding: 30px;
+                width: 90%;
+            }
+
+            h3 {
+                font-size: 24px;
+            }
+
+            .permissions-container input, .permissions-container select {
+                font-size: 14px;
+            }
+
+            .permissions-container button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+   
+   
+    <div class="permissions-container">
+        <h3>Manage Permissions</h3>
+
+        <!-- Create Permission Form -->
+        <form id="permissionForm">
+            <label for="permission_name">Permission Name:</label>
+            <input type="text" id="permission_name" name="permission_name" required>
+            <button type="submit">Create Permission</button>
+        </form>
+
+        <p id="message" class="message"></p>
+
+        <!-- Dropdown to display permissions -->
+        <label for="permissions">Select Permission:</label>
+        <select id="permissions">
+            <option value="" disabled selected>-- Select a Permission --</option>
+            <!-- Options will be dynamically populated -->
+        </select><br><br>
+
+        <!-- Delete Button -->
+        <button id="deletePermissionButton">Delete Selected Permission</button>
+    </div>
+
+    
+
+    
+        <script>
+            const token = localStorage.getItem('access_token'); // Retrieve the JWT token
+    
+            // Function to fetch permissions and populate the dropdown
+            async function fetchPermissions() {
+                try {
+                    const response = await fetch('/get_permissions', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+    
+                    if (response.ok) {
+                        const permissions = await response.json();
+                        const dropdown = document.getElementById('permissions');
+                        dropdown.innerHTML = ''; // Clear existing options
+    
+                        permissions.forEach(permission => {
+                            const option = document.createElement('option');
+                            option.value = permission.id;
+                            option.textContent = permission.permission_name;
+                            dropdown.appendChild(option);
+                        });
+                    } else {
+                        alert('Failed to fetch permissions');
+                    }
+                } catch (error) {
+                    console.error('Error fetching permissions:', error);
+                }
+            }
+    
+            // Function to delete the selected permission
+            async function deletePermission() {
+                const dropdown = document.getElementById('permissions');
+                const selectedPermissionId = dropdown.value;
+    
+                if (!selectedPermissionId) {
+                    alert('Please select a permission to delete.');
+                    return;
+                }
+    
+                if (!confirm('Are you sure you want to delete this permission?')) {
+                    return; // Cancel deletion
+                }
+    
+                try {
+                    const response = await fetch(`/permission_delete/${selectedPermissionId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+    
+                    if (response.ok) {
+                        alert('Permission deleted successfully');
+                        fetchPermissions(); // Refresh the dropdown
+                    } else {
+                        const error = await response.json();
+                        alert('Error deleting permission: ' + error.detail);
+                    }
+                } catch (error) {
+                    console.error('Error deleting permission:', error);
+                }
+            }
+    
+            // Attach event listener to the delete button
+            document.getElementById('deletePermissionButton').addEventListener('click', deletePermission);
+    
+            // Fetch permissions on page load
+            window.onload = fetchPermissions;
+    
+
+//___________________________
+
+        // Add event listener to the form submit
+        document.getElementById('permissionForm').addEventListener('submit', async function (event) {
+            event.preventDefault(); // Prevent the default form submit behavior
+
+            // Retrieve the token (e.g., from localStorage or wherever you have it)
+            const token = localStorage.getItem('access_token'); // Assuming token is saved in localStorage
+            console.log(token)
+            // Get the permission name from the input field
+            const permissionName = document.getElementById('permission_name').value;
+
+            // Prepare the form data
+            const formData = new FormData();
+            formData.append('permission_name', permissionName);
+
+            try {
+                // Send the request to create the permission
+                const response = await fetch('http://127.0.0.1:8000/permission_create/', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}` // Send the token in the Authorization header
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.text(); // Get the response as text (since it's HTML)
+                    document.getElementById('message').innerHTML = "Permission created successfully!";
+                } else {
+                    const errorData = await response.json();
+                    document.getElementById('message').innerHTML = "Error: " + errorData.detail;
+                }
+            } catch (error) {
+                console.error('Request failed', error);
+                document.getElementById('message').innerHTML = "Request failed.";
+            }
+        });
+
+    </script>
+</body>
+</html>
+
+

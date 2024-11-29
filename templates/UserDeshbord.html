@@ -1,0 +1,192 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin Dashboard</title>
+    <style>
+         body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 32px;
+            color: #2C3E50;
+        }
+
+        /* Container for the page content */
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Logout button styling */
+        #btn {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        #logoutButton {
+            background-color: #E74C3C;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #logoutButton:hover {
+            background-color: #C0392B;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #2C3E50;
+            color: white;
+        }
+
+        td {
+            background-color: #ECF0F1;
+        }
+
+        /* Hover effect for rows */
+        tr:hover {
+            background-color: #D5DBDB;
+        }
+
+        /* Responsive table */
+        @media (max-width: 768px) {
+            table {
+                width: 100%;
+                font-size: 14px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            #logoutButton {
+                width: 100%;
+                padding: 12px;
+                font-size: 18px;
+            }
+        }
+
+        /* Center content */
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to User Dashboard</h1>
+
+        <div id="btn">
+            <button id="logoutButton">Logout</button>
+        </div>
+
+        <!-- Table to display users data -->
+        <div class="content-wrapper">
+            <table id="users-table">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Roles</th>
+                        <th>Permissions</th>
+                        <th>Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Data will be injected here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Function to fetch user data and populate table
+            function fetchUserData() {
+                const token = localStorage.getItem("access_token");
+        
+                if (!token) {
+                    alert("Authorization token not found!");
+                    return;
+                }
+        
+                fetch("/Udeshbord_ren", {
+                    method: "GET",
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector("#users-table tbody");
+                    tableBody.innerHTML = ""; // Clear existing rows
+        
+                    data.users_data.forEach(user => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td>${user.user_id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.roles.join(", ")}</td>
+                            <td>${user.permissions.join(", ")}</td>
+                            <td><a href="{{url_for('updateItself_load')}}">Edit</a></td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+        
+                    // Attach event listeners after populating rows
+                    attachEditButtonListeners();
+                    attachDeleteButtonListeners();
+                })
+                .catch(error => {
+                    console.error("Error fetching user data:", error);
+                }); 
+            
+            
+            }  
+            
+        
+           
+         
+            fetchUserData();
+        });  
+
+        </script>
+ <script src="static/button.js"></script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+
+ <!DOCTYPE html>
+ <html lang="en">
+ <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: linear-gradient(to right, #2C3E50, #3498DB);
+            color: #fff;
+        }
+
+        .login-container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .login-container label {
+            font-size: 16px;
+            color: #333;
+            text-align: left;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        .login-container input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .login-container input:focus {
+            border-color: #3498DB;
+            outline: none;
+        }
+
+        .login-container button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498DB;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-container button:hover {
+            background-color: #2980B9;
+        }
+
+        .login-container .links {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .login-container .links a {
+            text-decoration: none;
+            color: #3498DB;
+            margin: 5px;
+            transition: color 0.3s ease;
+        }
+
+        .login-container .links a:hover {
+            color: #2980B9;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px;
+                width: 90%;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .login-container input {
+                font-size: 14px;
+            }
+
+            .login-container button {
+                font-size: 14px;
+            }
+        }
+    </style>
+ </head>
+ <body>
+    <div class="login-container">
+        <h1>Login</h1>
+        <form id="loginForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="button" id="loginButton">Login</button>
+
+            <div class="links">
+                <a href="{{url_for('AdminSignup')}}">Admin Signup</a>
+                <a href="{{url_for('UserSignup')}}">User Signup</a>
+                <a href="{{url_for('forget_password')}}">Forgot Password</a>
+            </div>
+        </form>
+    </div>
+  
+
+
+    <script>
+        async function loginUser() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+    
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ username, password }),
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Store token in localStorage
+                    localStorage.setItem('access_token', data.access_token);
+    
+                    // Update the URL to the redirect URL (no page reload)
+                    history.pushState({ page: '' }, '', data.redirect_url);
+    
+                    // You can redirect directly to the URL here instead of fetching page content manually
+                    window.location.href = data.redirect_url;  // Redirect the user to the new page
+    
+                } else {
+                    const error = await response.json();
+                    alert('Login failed: ' + error.detail);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('An error occurred during login.');
+            }
+        }
+    
+        // Add event listener to the login button
+        document.getElementById('loginButton').addEventListener('click', loginUser);
+    </script> 
+    
+
+
+

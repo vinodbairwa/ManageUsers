@@ -1,0 +1,161 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update User</title>
+    <style>
+        /* Global Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: linear-gradient(to right, #8e44ad, #3498db);
+            color: #333;
+        }
+
+        .update-container {
+            background-color: #fff;
+            width: 100%;
+            max-width: 500px;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .update-container label {
+            font-size: 16px;
+            color: #333;
+            text-align: left;
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        .update-container input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .update-container input:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+
+        .update-container button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .update-container button:hover {
+            background-color: #2980b9;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .update-container {
+                padding: 30px;
+                width: 90%;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .update-container input,
+            .update-container button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="update-container">
+        <h1>Update User</h1>
+        <!-- Form for updating user details -->
+        <form id="updateForm">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" placeholder="New Username" required><br><br>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" placeholder="New Email" required><br><br>
+
+            <button type="submit">Update</button>
+        </form>
+    </div>
+
+
+
+    <script>
+        // Function to handle form submission
+        document.getElementById('updateForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            
+            // Get the form data
+            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
+            
+            // Get the token from localStorage (assuming it's stored there after login)
+            const token = localStorage.getItem('access_token'); // Or from cookies/sessionStorage if needed
+
+            if (!token) {
+                alert('No valid token found!');
+                return;
+            }
+
+            try {
+                // Sending the data to the FastAPI endpoint
+                const response = await fetch('/UpdateItSelf/', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`, // Attach token to the Authorization header
+                        'Content-Type': 'application/x-www-form-urlencoded', // Content type for Form data
+                    },
+                    body: new URLSearchParams({
+                        username: username,
+                        email: email,
+                    }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Redirect the user based on the response
+                    window.location.href = data.redirect_url;
+                } else {
+                    // Handle errors (e.g., user not found)
+                    alert(data.detail || 'Something went wrong!');
+                }
+            } catch (error) {
+                console.error('Error updating user:', error);
+                alert('Failed to update user.');
+            }
+        });
+    </script>
+</body>
+</html>
