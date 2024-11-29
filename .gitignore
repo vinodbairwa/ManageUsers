@@ -1,5 +1,7 @@
+venv/Scripts
 
 venv/Lib
+venv/Include
 
 app/__pycache__
 alembic/__pycache__
