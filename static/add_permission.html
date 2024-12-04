@@ -134,11 +134,11 @@
         <button id="deletePermissionButton">Delete Selected Permission</button>
     </div>
 
-    
 
-    
-        <script>
-            const token = localStorage.getItem('access_token'); // Retrieve the JWT token
+
+
+<script> 
+          const token = localStorage.getItem('access_token'); // Retrieve the JWT token
     
             // Function to fetch permissions and populate the dropdown
             async function fetchPermissions() {
@@ -249,9 +249,9 @@
                 console.error('Request failed', error);
                 document.getElementById('message').innerHTML = "Request failed.";
             }
-        });
+        }); 
 
-    </script>
+</script> 
 </body>
 </html>
 

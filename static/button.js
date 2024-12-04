@@ -37,3 +37,8 @@ document.getElementById('logoutButton').addEventListener('click', async function
         alert('An error occurred while logging out.');
     }
 });
+
+
+
+
+

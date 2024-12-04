@@ -3,17 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="file:///D:/flask/FAST_API/static/style.css">
     <title>Password Reset</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f7fc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-image: linear-gradient(to right, #2C3E50, #3498DB);
+            color: #333;
+            margin: 0;
+        }
+
+        .password-reset-container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #3498DB;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #3498DB;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #2980B9;
+        }
+
+        .error {
+            color: #dc3545;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+    </style>
 </head>
 <body>
 
+    <div class="password-reset-container">
         <h1>Forgot Password</h1>
         <form method="POST" action="/forgot_pass/">
-            <input type="email" name="email" required placeholder="Enter your Email">
+            <div>
+                <input type="email" name="email" required placeholder="Enter your Email">
+            </div>
             <button type="submit">Submit</button>
         </form>
-        
+    </div>
 
-    </body>
+</body>
 </html>

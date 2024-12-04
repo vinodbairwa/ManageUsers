@@ -157,7 +157,9 @@
     
                     // Update the URL to the redirect URL (no page reload)
                     history.pushState({ page: '' }, '', data.redirect_url);
-    
+                    
+
+                    console.log(data.redirect_url)
                     // You can redirect directly to the URL here instead of fetching page content manually
                     window.location.href = data.redirect_url;  // Redirect the user to the new page
     

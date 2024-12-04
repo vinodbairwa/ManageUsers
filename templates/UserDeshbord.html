@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Admin Dashboard</title>
+    <title>User Dashboard</title>
     <style>
          body {
             font-family: Arial, sans-serif;
@@ -111,7 +111,7 @@
         <div id="btn">
             <button id="logoutButton">Logout</button>
         </div>
-
+        <a href="{{url_for('change_pass')}}">change-password</a>
         <!-- Table to display users data -->
         <div class="content-wrapper">
             <table id="users-table">
@@ -144,7 +144,7 @@
                     return;
                 }
         
-                fetch("/Udeshbord_ren", {
+                fetch("http://127.0.0.1:8000/Udeshbord_ren", {
                     method: "GET",
                     headers: {
                         "Authorization": `Bearer ${token}`,

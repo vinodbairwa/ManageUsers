@@ -61,6 +61,20 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         raise HTTPException(status_code=403, detail="Invalid token")
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # async def validate_token(Authorize: AuthJWT = Depends()):
 #     try:
 #         # Validate the token using FastAPI-JWT-Auth

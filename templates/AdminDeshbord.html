@@ -1,6 +1,4 @@
 
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -122,16 +120,25 @@
         <!-- Navigation Bar -->
         <div id="nav">
             <nav>
-                <a href="{{url_for('permission')}}">Manage Permissions</a>
-                <a href="{{url_for('roles')}}">Manage Roles</a>
-                <a href="{{url_for('get_user_role_form')}}">User Roles</a>
+
+
+                
+                <a href="#" onclick="goToPermissionPage('add_permission')">Manage Permissions</a>
+                
+                <a href="#" onclick="goToPermissionPage('AddRole')">Manage Role</a>
+
+                <a href="#" onclick="goToPermissionPage('useroleDrop')">UserRoles Assign</a>
+
+                <a href="#" onclick="goToPermissionPage('per_role')">RolePermission Assign</a>
+
+                <a href="#" onclick="goToPermissionPage('ItselfUpdate')">Edit Super Admin</a>
+
                 <a href="{{url_for('get_web')}}">Subscription</a>
-                <a href="{{url_for('get_permission_role_form')}}">Permission Assign</a>
-                <a href="{{url_for('updateItself_load')}}">Edit Super Admin</a>
+        
                 <button id="logoutButton">Logout</button>
             </nav>
         </div>
-
+        <a href="#" onclick="goToPermissionPage('changePassword')">change-password</a>
         <!-- Table to display users data -->
         <div class="content-wrapper">
             <table id="users-table">
@@ -309,6 +316,7 @@ function attachEditButtonListeners() {
         });
         </script>
          <script src="static/button.js"></script>
+         <script src="static/button1.js"></script>
         
 </body>
 </html>

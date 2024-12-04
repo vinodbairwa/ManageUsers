@@ -31,7 +31,7 @@ from passlib.context import CryptContext
 from .mail import send_email
 from .jwt import *
 from pathlib import Path
-
+import os
 import redis.asyncio as redis
 # import requests
 
@@ -53,12 +53,14 @@ app.add_middleware(
 )
 
 
-# app.mount("/", StaticFiles(directory="path/to/your/frontend/build", html=True), name="static")
 
-# Mount the static files directory
-app.mount("/static", StaticFiles(directory="static", html=True), name="static")
+# templates = Jinja2Templates(directory="templates")  # Adjust the path if necessary
+app.mount("/static", StaticFiles(directory=Path(__file__).parent.parent / "static"), name="static")
 
-templates = Jinja2Templates(directory="templates")  # Adjust the path if necessary
+
+# app.mount("/static", StaticFiles(directory="static"), name="static")
+
+templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
 
 # Create the database tables
 Base.metadata.create_all(bind=engine)
@@ -131,11 +133,18 @@ def login(
     db: Session = Depends(get_db),
     Authorize: AuthJWT = Depends()
 ):
-    db_user = db.query(User).filter(User.username == username).first()
 
+
+    # if redis_client.exists(f"access_token:{username}"):
+    #     raise HTTPException(status_code=400, detail="User already logged in")
+    
+    db_user = db.query(User).filter(User.username == username).first()
+    
     # Check if db_user exists
     if not db_user:
         raise HTTPException(status_code=400, detail="User not found")
+    
+    # user_email = db_user.email 
 
     # Verify password (replace with your hashing logic)
     if not hashing.verify_password(password, db_user.password):
@@ -159,7 +168,7 @@ def login(
     # Store refresh token in Redis with expiration
     redis_client.set(f"access_token:{username}",access_token,ex=expiration_time)
    
-    
+    # send_email(user_email, f"Login successfull username: {username}")
     
     redirect_url = (
         "/admin" if role.role_name == "admin" 
@@ -180,15 +189,28 @@ def login(
     
     
 # _______________________
+
+
 @app.post("/logout/")
 async def logout(Authorize: AuthJWT = Depends()):
     try:
+        # Get the username of the current logged-in user from the JWT
+        current_user = Authorize.get_jwt_subject()
+        
+        if not current_user:
+            raise HTTPException(status_code=400, detail="User not logged in")
+        
+        # Remove the user's access token from Redis (logging them out)
+        redis_client.delete(f"access_token:{current_user}")
+        
         return {"message": "Successfully logged out"}
+    
     except Exception as e:
         print(f"Error during logout: {e}")
         raise HTTPException(status_code=500, detail="Logout failed")
 # Other routes and code..
 ##______________________________________________________________________________________________________________#
+
 
 
 # Create a new permission
@@ -224,14 +246,14 @@ def create_permission(
 
     db.refresh(new_permission) 
 
-    
-    return templates.TemplateResponse("add_permission.html",
-    {    
-        "request": request,
-        "msg": "Permission created successfully",
-        "permission_id": new_permission.id,
-        "permission_name": new_permission.permission_name
-    })
+    return  "Permission created successfully"
+    # return templates.TemplateResponse("add_permission.html",
+    # {    
+    #     "request": request,
+    #     "msg": "Permission created successfully",
+    #     "permission_id": new_permission.id,
+    #     "permission_name": new_permission.permission_name
+    # })
 
 
 #____________________delete permission api___________________
@@ -317,12 +339,13 @@ def create_role(
     db.add(new_role) 
     db.commit()
     db.refresh(new_role)
-    return templates.TemplateResponse("AddRole.html",
-    {
-    "request": request,
-    "role_id": new_role.id,
-    "role_name": new_role.role_name })
- 
+    # return templates.TemplateResponse("AddRole.html",
+    # {
+    # "request": request,
+    # "role_id": new_role.id,
+    # "role_name": new_role.role_name })
+    return "Role created successfully"
+
 
  #delete role 
 @app.post("/roles_delete", response_class=HTMLResponse)
@@ -348,8 +371,8 @@ def delete_role(
     db.delete(role)
     db.commit()
     # Optionally, redirect back to a role management page
-    return templates.TemplateResponse("AddRole.html", {"role_name": role_name,"request": request, "msg": "Role deleted successfully"})
-
+    # return templates.TemplateResponse("AddRole.html", {"role_name": role_name,"request": request, "msg": "Role deleted successfully"})
+    return "Role deleted successfully"
 # #______________________________________________________________________________________________________________#
     
 
@@ -392,15 +415,15 @@ def create_user_role(
     db.refresh(new_user_role)
 
 
-    return templates.TemplateResponse(
-        "useroleDrop.html",
-        {
-            "request": request,
-            "username": user.username,  # Correctly pass the username here
-            "user_role_id": new_user_role.id,
-        }
-    )
-    
+    # return templates.TemplateResponse(
+    #     "useroleDrop.html",
+    #     {
+    #         "request": request,
+    #         "username": user.username,  # Correctly pass the username here
+    #         "user_role_id": new_user_role.id,
+    #     }
+    # )
+    return "user role asign successfully"
 #______________________________________________________________________________________________________________#  
 
 
@@ -455,9 +478,9 @@ def create_permission_role(
         db.rollback()
         raise HTTPException(status_code=500, detail="Database error")
 
-    return templates.TemplateResponse("per_role.html",
-    {'request':request,"permission_role_ids": [print(rp.id) for rp in created_permission_roles]})
-
+    # return templates.TemplateResponse("per_role.html",
+    # {'request':request,"permission_role_ids": [print(rp.id) for rp in created_permission_roles]})
+    return "Permission asign to the Role Successfully"
 
 
 #______________________________________________________________________________________________________________#
@@ -619,11 +642,6 @@ def Superadmin_deshbord(
     return JSONResponse(content={"users_data": response})
 #______________________________________________________________________________________________________________#
 
-# update SuperAdmin , Admin And All the Users  update itself deshbord
-@app.get("/UserUpdateItSelf/",response_class=HTMLResponse)
-async def updateItself_load(request: Request,  db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
-    return templates.TemplateResponse("ItselfUpdate.html", {"request": request,})
-
 
 # itself update api SuperAdmin , Admin And All the Users  update 
 @app.post("/UpdateItSelf/")
@@ -681,6 +699,10 @@ async def updateItself(
         status_code=200,
         content={
             "redirect_url": redirect_url,
+            "updated_user": {
+                "username": existing_user.username,
+                "email": existing_user.email,
+            },
         },
     )
     
@@ -689,7 +711,7 @@ async def updateItself(
 
     
 
-######## update super admin in the user
+####### update super admin in the user
 @app.get("/SuperAdmin/update/{user_id}", response_class=HTMLResponse)
 def UpdateSuperAdmin(
     user_id: int,  # Adding user_id as a positional argument
@@ -697,11 +719,11 @@ def UpdateSuperAdmin(
     db: Session = Depends(get_db),
     Authorize: AuthJWT = Depends(),
 ):
-    # try:
-    #     Authorize.jwt_required()  # Ensure the request contains a valid JWT
-    #     current_user = Authorize.get_jwt_subject()
-    # except Exception as e:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing token")
+    try:
+        Authorize.jwt_required()  # Ensure the request contains a valid JWT
+        current_user = Authorize.get_jwt_subject()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing token")
 
     return templates.TemplateResponse(
         "update.html",
@@ -713,7 +735,11 @@ def UpdateSuperAdmin(
 
 
 
-######---revise work with both superadmin and admin
+
+
+
+
+######---work with both superadmin and admin
 @app.post("/admin_update/{user_id}", response_class=HTMLResponse)
 async def update_user(
     user_id: int,
@@ -768,7 +794,7 @@ async def update_user(
     # Render the update.html template with updated user details and available roles
     return templates.TemplateResponse(
         "update.html",
-        {"request": request, "username": user.username, "email": user.email, "roles": roles},
+        {"request": request, "username": user.username, "email": user.email, "roles": role},
     )
 
 
@@ -808,12 +834,6 @@ async def delete_user(
 #______________________________________________________________________________________________________________#
 @app.get("/forget-password/",response_class= HTMLResponse)
 async def forget_password(request: Request,Authorize: AuthJWT = Depends()):
-    try:
-        Authorize.jwt_required()  # Ensure the request contains a valid JWT
-        current_user = Authorize.get_jwt_subject()
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing token")
-
     return templates.TemplateResponse("forgot.html", {"request": request})
 
 
@@ -821,8 +841,8 @@ async def forget_password(request: Request,Authorize: AuthJWT = Depends()):
 async def forget(
     request: Request,
     email: EmailStr = Form(...), 
-    # Authorize: AuthJWT = Depends(), 
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    Authorize: AuthJWT = Depends()
 ):
     # try:
     #     Authorize.jwt_required()  # Ensure the request contains a valid JWT
@@ -859,15 +879,9 @@ async def verify_otp_pass(
     otp: str = Form(...),  # OTP entered by the user
     email: EmailStr = Form(...),  # Email address of the user
     db: Session = Depends(get_db),
-    Authorize: AuthJWT = Depends()# Database session
+    Authorize: AuthJWT = Depends()
 ):
     
-    # try:
-    #     Authorize.jwt_required()  # Ensure the request contains a valid JWT
-    #     current_user = Authorize.get_jwt_subject()
-    # except Exception as e:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing token")
-
     """Verify OTP and allow user to reset password if valid"""
     
     # Retrieve the OTP from Redis
@@ -898,8 +912,9 @@ async def reset_password(
     new_password: str= Form(...),
     confirm_password: str= Form(...),
     db: Session = Depends(get_db),
+    Authorize: AuthJWT = Depends()
     ):
- 
+
     print("check")
     user = db.query(User).filter(User.email == email).first()
     print("email")
@@ -918,41 +933,56 @@ async def reset_password(
 
 
 
+
+
 #--------------------------------------------------
 
 
-#Change Password
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-@app.post("/change-password/",response_class= HTMLResponse)
+from fastapi.responses import JSONResponse
+
+@app.post("/change-password/", response_class=JSONResponse)
 async def change_password(
-    # email: str = Form(...),
     old_password: str = Form(...),
     new_password: str = Form(...),
+    confirm_password: str = Form(...),
     db: Session = Depends(get_db),
-    # token: str = Depends(oauth2_scheme)
+    Authorize: AuthJWT = Depends()
 ):
-    # Decode the token and extract the user's email
-    email = jwt.get_email_from_token(token)  # Implement this function to decode the JWT and get the email
-
-    # Fetch the user based on the email obtained from the token
-    user = db.query(User).filter(User.email == email).first()
+    try:
+        # Ensure the request contains a valid JWT
+        Authorize.jwt_required()  
+        current_user = Authorize.get_jwt_subject()  # Extract the current user's email (subject from the token)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing token")
     
-    # user = db.query(User).filter(User.password == old_password).first()
-   
+    # Fetch the user based on the email obtained from the token (current_user_email)
+    user = db.query(User).filter(User.username == current_user).first()  # Use email to query the user
+    
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-
-    # Verify the old password
-    if not hashing.verify_password(old_password,user.password):
-        raise HTTPException(status_code=400, detail="Old password is incorrect")
-
+    
+    user_email = user.email 
+    # Verify the old password (compare the hash of the old password)
+    if not verify_password(old_password, user.password):
+        raise HTTPException(status_code=400, detail="Incorrect old password")
+    
+    # Ensure the new password is different from the old password
+    if old_password == new_password:
+        raise HTTPException(status_code=400, detail="New password cannot be the same as the old password")
+    
+    # Ensure the new password matches the confirmed password
+    if new_password != confirm_password:
+        raise HTTPException(status_code=400, detail="Passwords do not match")
+    
     # Hash the new password before updating
-    hashed_new_password = hashing.hash_password(new_password)
-    crud.update_user_password(db, user, hashed_new_password)
-
-    return {"msg": "Password has been changed successfully."}
-
-
+    hashed_new_password = hash_password(new_password)
+    
+    # Update the user's password in the database
+    user.password = hashed_new_password
+    db.commit()
+    send_email(user_email, f"change password successfull and your password is: {new_password}")
+    # Return JSON response with success message
+    return JSONResponse(content={"msg": "Password has been changed successfully."})
 
 # #####-----------------------
 
