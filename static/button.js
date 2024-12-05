@@ -25,6 +25,7 @@ document.getElementById('logoutButton').addEventListener('click', async function
         if (response.ok) {
             // Remove the JWT token from localStorage
             localStorage.removeItem('access_token');
+
             alert('You have been logged out.');
             window.location.href = '/';  // Redirect to the home page or login page
         } else {

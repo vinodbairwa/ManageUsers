@@ -1,37 +1,58 @@
 
+// function goToPermissionPage(pageName) {
+//     // Retrieve the JWT token from storage (localStorage/sessionStorage)
+//     const token = localStorage.getItem("access_token"); // or sessionStorage
+    
+//     console.log(pageName)
+//     const url = pageName
+//     // Check if the token exists
+//     if (!token) {
+//         alert("Unauthorized access: JWT token is missing.");
+//         return;
+//     }
+
+//     // Create a new request to the /permission endpoint with the pageName
+//     fetch(`/Render/${url}`, {
+//         method: 'GET',
+//         headers: {
+//             'Authorization': `Bearer ${token}`
+//         }
+//     })
+//     .then(response => {
+//         if (response.ok) {
+//             // If the token is valid and the page is accessible, navigate to the dynamic page
+//             window.location.href = `/static/${url}.html`;  // Dynamically navigate
+//         } else {
+//             throw new Error('Unauthorized access');
+//         }
+//     })
+//     .catch(error => {
+//         alert("Error: " + error.message);  // Handle error (invalid token or other issues)
+//     });
+// }
+
+
 function goToPermissionPage(pageName) {
-    // Retrieve the JWT token from storage (localStorage/sessionStorage)
+    // Retrieve the JWT token from localStorage (or sessionStorage)
     const token = localStorage.getItem("access_token"); // or sessionStorage
     
-    console.log(pageName)
-    const url = pageName
+    console.log(pageName);
+
     // Check if the token exists
     if (!token) {
         alert("Unauthorized access: JWT token is missing.");
         return;
     }
 
-    // Create a new request to the /permission endpoint with the pageName
-    fetch(`/Render/${url}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': `Bearer ${token}`
-        }
-    })
-    .then(response => {
-        if (response.ok) {
-            // If the token is valid and the page is accessible, navigate to the dynamic page
-            window.location.href = `/static/${url}.html`;  // Dynamically navigate
-        } else {
-            throw new Error('Unauthorized access');
-        }
-    })
-    .catch(error => {
-        alert("Error: " + error.message);  // Handle error (invalid token or other issues)
-    });
+    // If the token exists, dynamically navigate to the page
+    const url = `/static/${pageName}.html`;
+    window.location.href = url;  // Navigate to the page
 }
 
 
+
+
+// ______________________________________________
 
 
 

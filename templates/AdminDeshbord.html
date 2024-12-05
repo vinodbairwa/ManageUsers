@@ -260,55 +260,28 @@
           
 
 function attachEditButtonListeners() {
-    const editButtons = document.querySelectorAll(".btn-edit");
+        const editButtons = document.querySelectorAll(".btn-edit");
 
-    editButtons.forEach(button => {
-        button.addEventListener("click", function(event) {
-            event.preventDefault(); // Prevent default anchor behavior
+        editButtons.forEach(button => {
+            button.addEventListener("click", function(event) {
+                event.preventDefault();  // Prevent default anchor behavior
 
-            console.log("Button Element:", this); // Debugging
-            const userId = this.dataset.userid || this.getAttribute("data-userid"); // Fallback
-            console.log("User ID:", userId);
+                // Store the user_id in a variable and redirect
+                const userId = this.dataset.userid;  // Get user ID from data attribute
 
-            if (!userId) {
-                alert("User ID not found!");
-                return;
-            }
-
-            const token = localStorage.getItem("access_token");
-            if (!token) {
-                alert("Authorization token not found!");
-                return;
-            }
-
-            // Redirect to the update page and include the token in headers
-            fetch(`/SuperAdmin/update/${userId}`, {
-                method: "GET",
-                headers: {
-                    "Authorization": `Bearer ${token}`, // Attach the token here
-                },
-            })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(err => {
-                        throw new Error(err || "Failed to load the update page");
-                    });
+                if (!userId) {
+                    alert("User ID not found!");
+                    return;
                 }
-                return response.text(); // Assuming the response is HTML content
-            })
-            .then(html => {
-                // We can either redirect to a new page or inject the HTML into an existing container
-                // If redirecting to the new page
-                window.location.href = `/SuperAdmin/update/${userId}`;
-            })
-            .catch(error => {
-                console.error("Error fetching the update form:", error);
-                alert("Failed to load the update page: " + error.message);
+
+                // Store userId in session storage (or local storage)
+                sessionStorage.setItem("user_id", userId);
+
+                // Redirect to the update page
+                window.location.href = "/static/update.html";
             });
         });
-    });
-}
-
+    }
 
             
             // Fetch and display user data on page load

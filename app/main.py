@@ -137,7 +137,8 @@ def login(
 
     # if redis_client.exists(f"access_token:{username}"):
     #     raise HTTPException(status_code=400, detail="User already logged in")
-    
+
+
     db_user = db.query(User).filter(User.username == username).first()
     
     # Check if db_user exists
@@ -710,35 +711,6 @@ async def updateItself(
 # ___________________________________
 
     
-
-####### update super admin in the user
-@app.get("/SuperAdmin/update/{user_id}", response_class=HTMLResponse)
-def UpdateSuperAdmin(
-    user_id: int,  # Adding user_id as a positional argument
-    request: Request,
-    db: Session = Depends(get_db),
-    Authorize: AuthJWT = Depends(),
-):
-    try:
-        Authorize.jwt_required()  # Ensure the request contains a valid JWT
-        current_user = Authorize.get_jwt_subject()
-    except Exception as e:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing token")
-
-    return templates.TemplateResponse(
-        "update.html",
-        {
-            "request": request,
-            "user_id": user_id  # Pass user_id to the template if needed
-        }
-    )
-
-
-
-
-
-
-
 ######---work with both superadmin and admin
 @app.post("/admin_update/{user_id}", response_class=HTMLResponse)
 async def update_user(
@@ -790,12 +762,15 @@ async def update_user(
     # Commit changes
     db.commit()
     db.refresh(user)
+    
+    return "User Update Successfully"
 
     # Render the update.html template with updated user details and available roles
-    return templates.TemplateResponse(
-        "update.html",
-        {"request": request, "username": user.username, "email": user.email, "roles": role},
-    )
+    # return templates.TemplateResponse(
+    #     "update.html",
+    #     {"request": request, "username": user.username, "email": user.email, "roles": role},
+    # )
+  
 
 
 
