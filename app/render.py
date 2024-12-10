@@ -11,9 +11,11 @@ from .main import *
 def Render__page_Html(request: Request, page_name: str,Authorize: AuthJWT = Depends()):
     try:
         Authorize.jwt_required()  # Validate JWT token
+        # pass
     except Exception as e:
         raise HTTPException(status_code=401, detail="Unauthorized")
-
+    # print(f"{page_name}.html")
+    # return templates.TemplateResponse(f"{page_name}.html", {"request": request})
 
 
 @app.get("/Udeshbord", response_class=HTMLResponse)
@@ -35,7 +37,6 @@ def UserSignup(request: Request):
     return templates.TemplateResponse("UserSignup.html", {"request": request})
 
 
-
 # @app.get("/SuperAdmin/update/{user_id}", response_class=HTMLResponse)
 # def UpdateSuperAdmin(
 #     user_id: int,  # Adding user_id as a positional argument
@@ -54,13 +55,13 @@ def UserSignup(request: Request):
    
 
 
-# @app.get("/permission", response_class=HTMLResponse)
-# def permission(request: Request, Authorize: AuthJWT = Depends()):
-#     try:
-#         Authorize.jwt_required()  # Validate JWT token
-#         return FileResponse("/static/add_permission.html")
-#     except Exception as e:
-#         raise HTTPException(status_code=401, detail="Unauthorized")
+@app.get("/permission", response_class=HTMLResponse)
+def permission(request: Request, Authorize: AuthJWT = Depends()):
+    # try:
+        # Authorize.jwt_required()  # Validate JWT token
+        return templates.TemplateResponse("add_permission.html",{"request":request})
+    # except Exception as e:
+    #     raise HTTPException(status_code=401, detail="Unauthorized")
     
 
 
@@ -135,3 +136,8 @@ def UserSignup(request: Request):
 
    
 # user signup
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -102,6 +102,66 @@
             justify-content: center;
             align-items: center;
         }
+
+        /* ________________ */
+
+
+        
+
+        /* Container for the dropdown */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Style for the dropdown text (span) */
+.dropdown span {
+    cursor: pointer;
+    padding: 10px 15px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover effect for the dropdown trigger */
+.dropdown span:hover {
+    background-color: #2980b9;
+}
+
+/* Dropdown content (hidden by default) */
+.dropdown-content {
+    display: none;  /* Hidden by default */
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;  /* Width of the dropdown */
+    box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 5px;
+}
+
+/* Style for each link in the dropdown */
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+    border-bottom: 1px solid #ddd;
+    transition: background-color 0.3s ease;
+}
+
+/* Hover effect for links in the dropdown */
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+/* Show the dropdown when hovering over the parent */
+.dropdown:hover .dropdown-content {
+    display: block;  /* Show dropdown content */
+}
+
     </style>
 </head>
 <body>
@@ -111,7 +171,17 @@
         <div id="btn">
             <button id="logoutButton">Logout</button>
         </div>
-        <a href="{{url_for('change_pass')}}">change-password</a>
+
+        <div class="dropdown">
+            <span>Download</span>
+            <div class="dropdown-content">
+                <a href="#" id="downloadRoleCsvBtn" class="button-link">Download Roles CSV</a>
+                <a href="#" id="downloadUserDataCsvBtn" class="button-link">Download User Data CSV</a>
+                <a href="#" id="downloadPermissionCsvBtn" class="button-link">Download Permissions CSV</a>
+            </div>
+        </div>
+    
+        <a href="#" onclick="goToPermissionPage('changePassword')" class="button-link">Change Password</a>
         <!-- Table to display users data -->
         <div class="content-wrapper">
             <table id="users-table">
@@ -164,7 +234,7 @@
                             <td>${user.email}</td>
                             <td>${user.roles.join(", ")}</td>
                             <td>${user.permissions.join(", ")}</td>
-                            <td><a href="{{url_for('updateItself_load')}}">Edit</a></td>
+                            <a href="#" onclick="goToPermissionPage('ItselfUpdate')">Edit </a>
                         `;
                         tableBody.appendChild(row);
                     });
@@ -188,5 +258,9 @@
 
         </script>
  <script src="static/button.js"></script>
+ 
+ <script src="static/button1.js"></script>
+
+<script src="static/downlodePdf.js"></script>
 </body>
 </html>

@@ -1,5 +1,4 @@
 const token = localStorage.getItem('access_token');
-console.log("Token from localStorage: ", token);
 
 document.getElementById('logoutButton').addEventListener('click', async function() {
     try {
@@ -13,6 +12,7 @@ document.getElementById('logoutButton').addEventListener('click', async function
 
         // Send a POST request to the logout endpoint
         const response = await fetch('http://127.0.0.1:8000/logout/', {
+            method: 'POST',
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,

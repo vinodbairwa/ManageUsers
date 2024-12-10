@@ -1,0 +1,98 @@
+ body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7fc;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-image: linear-gradient(to right, #2C3E50, #3498DB);
+    color: #333;
+}
+
+.permissions-container {
+    background-color: #fff;
+    width: 100%;
+    max-width: 600px;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+h3 {
+    font-size: 28px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.permissions-container label {
+    font-size: 16px;
+    color: #333;
+    text-align: left;
+    display: block;
+    margin: 10px 0 5px;
+}
+
+.permissions-container input, .permissions-container select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+.permissions-container input:focus, .permissions-container select:focus {
+    border-color: #3498DB;
+    outline: none;
+}
+
+.permissions-container button {
+    width: 100%;
+    padding: 12px;
+    background-color: #3498DB;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.permissions-container button:hover {
+    background-color: #2980B9;
+}
+
+.message {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #28a745;
+}
+
+.message.error {
+    color: #dc3545;
+}
+
+
+/* Responsive Design */
+@media (max-width: 480px) { 
+    .permissions-container {
+        padding: 30px;
+        width: 90%;
+    }
+
+    h3 {
+        font-size: 24px;
+    }
+
+    .permissions-container input, .permissions-container select {
+        font-size: 14px;
+    }
+
+    .permissions-container button {
+        font-size: 14px;
+    } 
+} 

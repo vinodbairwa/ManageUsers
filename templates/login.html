@@ -136,101 +136,102 @@
 
 
     <script>
-        // async function loginUser() {
-        //     const username = document.getElementById('username').value;
-        //     const password = document.getElementById('password').value;
-    
-        //     try {
-        //         const response = await fetch('/login', {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/x-www-form-urlencoded',
-        //             },
-        //             body: new URLSearchParams({ username, password }),
-        //         });
-    
-        //         if (response.ok) {
-        //             const data = await response.json();
-                    
-        //             // Store token in localStorage
-        //             localStorage.setItem('access_token', data.access_token);
-    
-        //             // Update the URL to the redirect URL (no page reload)
-        //             history.pushState({ page: '' }, '', data.redirect_url);
-                    
-
-        //             console.log(data.redirect_url)
-        //             // You can redirect directly to the URL here instead of fetching page content manually
-        //             window.location.href = data.redirect_url;  // Redirect the user to the new page
-                    
-        //             // window.location.href = "templates/SuperAdmin.html";
-
-        //         } else {
-        //             const error = await response.json();
-        //             alert('Login failed: ' + error.detail);
-        //         }
-        //     } catch (error) {
-        //         console.error('Login error:', error);
-        //         alert('An error occurred during login.');
-        //     }
-        // }
-    
-        // // Add event listener to the login button
-        // document.getElementById('loginButton').addEventListener('click', loginUser);
-
-
-
-
-
-
         async function loginUser() {
-    // Check if the access token is already stored in localStorage
-    const token = localStorage.getItem('access_token');
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+    
+            try {
+                const response = await fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ username, password }),
+                });
+                 
+                console.log(response)
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    // Store token in localStorage
+                    localStorage.setItem('access_token', data.access_token);
+    
+                    // Update the URL to the redirect URL (no page reload)
+                    history.pushState({ page: '' }, '', data.redirect_url);
+                    
 
-    if (token) {
-        // If the token exists in localStorage, show a message that the user is already logged in
-        alert('User is already logged in!');
-        window.location.href = '/'; // Redirect to a dashboard or home page
-        return; // Exit the function early, no need to perform login
-    }
+                    console.log(data.redirect_url)
+                    // You can redirect directly to the URL here instead of fetching page content manually
+                    window.location.href = data.redirect_url;  // Redirect the user to the new page
+                    
+                    // window.location.href = "templates/SuperAdmin.html";
 
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    try {
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({ username, password }),
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-
-            // Store token in localStorage
-            localStorage.setItem('access_token', data.access_token);
-
-            // Update the URL to the redirect URL (no page reload)
-            history.pushState({ page: '' }, '', data.redirect_url);
-
-            console.log(data.redirect_url);
-            // You can redirect directly to the URL here instead of fetching page content manually
-            window.location.href = data.redirect_url;  // Redirect the user to the new page
-
-        } else {
-            const error = await response.json();
-            alert('Login failed: ' + error.detail);
+                } else {
+                    const error = await response.json();
+                    alert('Login failed: ' + error.detail);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('An error occurred during login.');
+            }
         }
-    } catch (error) {
-        console.error('Login error:', error);
-        alert('An error occurred during login.');
-    }
-}
+    
+        // Add event listener to the login button
+        document.getElementById('loginButton').addEventListener('click', loginUser);
 
-// Add event listener to the login button
-document.getElementById('loginButton').addEventListener('click', loginUser);
+
+
+
+
+
+//         async function loginUser() {
+//     // Check if the access token is already stored in localStorage
+//     const token = localStorage.getItem('access_token');
+
+//     if (token) {
+//         // If the token exists in localStorage, show a message that the user is already logged in
+//         alert('User is already logged in!');
+//         window.location.href = '/'; // Redirect to a dashboard or home page
+//         return; // Exit the function early, no need to perform login
+//     }
+
+//     const username = document.getElementById('username').value;
+//     const password = document.getElementById('password').value;
+
+//     try {
+//         const response = await fetch('/login', {
+//             method: 'POST',
+//             headers: {
+//                 'Content-Type': 'application/x-www-form-urlencoded',
+//             },
+//             body: new URLSearchParams({ username, password }),
+//         });
+
+//         if (response.ok) {
+//             const data = await response.json();
+
+//             // Store token in localStorage
+//             localStorage.setItem('access_token', data.access_token);
+
+//             // Update the URL to the redirect URL (no page reload)
+//             history.pushState({ page: '' }, '', data.redirect_url);
+
+//             console.log(data.redirect_url);
+//             // You can redirect directly to the URL here instead of fetching page content manually
+//             window.location.href = data.redirect_url;  // Redirect the user to the new page
+
+//         } else {
+//             const error = await response.json();
+//             alert('Login failed: ' + error.detail);
+//         }
+//     } catch (error) {
+//         console.error('Login error:', error);
+//         alert('An error occurred during login.');
+//     }
+// }
+
+// // Add event listener to the login button
+// document.getElementById('loginButton').addEventListener('click', loginUser);
 
     </script> 
     

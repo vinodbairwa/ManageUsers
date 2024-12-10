@@ -6,7 +6,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
 from jose import JWTError
-from .database import get_db, engine,redis_client
+from app.database import get_db, engine,redis_client
 from sqlalchemy.orm import Session
 from app.models import Base, User,Role,Permission, UserRole,RolePermission
 from pydantic import BaseModel, EmailStr
@@ -56,12 +56,12 @@ app.add_middleware(
 
 # templates = Jinja2Templates(directory="templates")  # Adjust the path if necessary
 app.mount("/static", StaticFiles(directory=Path(__file__).parent.parent / "static"), name="static")
-
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # app.mount("/static", StaticFiles(directory="static"), name="static")
 
 templates = Jinja2Templates(directory=str(Path(__file__).parent.parent / "templates"))
-
+# 
 # Create the database tables
 Base.metadata.create_all(bind=engine)
 
@@ -135,8 +135,8 @@ def login(
 ):
 
 
-    # if redis_client.exists(f"access_token:{username}"):
-    #     raise HTTPException(status_code=400, detail="User already logged in")
+    if redis_client.exists(f"access_token:{username}"):
+        raise HTTPException(status_code=400, detail="User already logged in")
 
 
     db_user = db.query(User).filter(User.username == username).first()
@@ -189,6 +189,11 @@ def login(
     
     
     
+
+
+
+
+
 # _______________________
 
 
@@ -246,8 +251,10 @@ def create_permission(
         raise HTTPException(status_code=500, detail="Database error")
 
     db.refresh(new_permission) 
+    return JSONResponse(content={"message": "Permission created successfully"})
 
-    return  "Permission created successfully"
+
+    # return  "Permission created successfully"
     # return templates.TemplateResponse("add_permission.html",
     # {    
     #     "request": request,
@@ -340,12 +347,15 @@ def create_role(
     db.add(new_role) 
     db.commit()
     db.refresh(new_role)
+    return JSONResponse(content={"message": "Role created successfully"})
+
+    # return "Role created successfully"
     # return templates.TemplateResponse("AddRole.html",
     # {
     # "request": request,
     # "role_id": new_role.id,
     # "role_name": new_role.role_name })
-    return "Role created successfully"
+    
 
 
  #delete role 
@@ -371,9 +381,12 @@ def delete_role(
     # Delete the role
     db.delete(role)
     db.commit()
+    return JSONResponse(content={"message": "Role deleted successfully"})
+
+    # return "Role deleted successfully"
     # Optionally, redirect back to a role management page
     # return templates.TemplateResponse("AddRole.html", {"role_name": role_name,"request": request, "msg": "Role deleted successfully"})
-    return "Role deleted successfully"
+   
 # #______________________________________________________________________________________________________________#
     
 
@@ -414,7 +427,9 @@ def create_user_role(
     db.add(new_user_role)
     db.commit()
     db.refresh(new_user_role)
+    return JSONResponse(content={"message": "user role asign successfully"})
 
+    # return "user role asign successfully"
 
     # return templates.TemplateResponse(
     #     "useroleDrop.html",
@@ -424,7 +439,7 @@ def create_user_role(
     #         "user_role_id": new_user_role.id,
     #     }
     # )
-    return "user role asign successfully"
+    
 #______________________________________________________________________________________________________________#  
 
 
@@ -478,10 +493,14 @@ def create_permission_role(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail="Database error")
+    
+    return JSONResponse(content={"message": "Permission asign to the Role Successfully"})
+
+    # return "Permission asign to the Role Successfully"
 
     # return templates.TemplateResponse("per_role.html",
     # {'request':request,"permission_role_ids": [print(rp.id) for rp in created_permission_roles]})
-    return "Permission asign to the Role Successfully"
+   
 
 
 #______________________________________________________________________________________________________________#
@@ -582,10 +601,11 @@ def admin_deshbord(
             "roles": roles,
             "permissions": list(permissions)
         }) 
+        return JSONResponse(content={"users_data": response})
               
     # Return the template response with the users data
     # return templates.TemplateResponse("AdminDeshbord.html", {"request": request, "users_data": response})
-    return JSONResponse(content={"users_data": response})
+    
     
     
 
@@ -637,10 +657,10 @@ def Superadmin_deshbord(
             "roles": roles,
             "permissions": list(permissions)
         })
-    
+    return JSONResponse(content={"users_data": response})
     # Return the template response with the users data
     # return templates.TemplateResponse("SuperAdmin.html", {"request": request, "users_data": response})
-    return JSONResponse(content={"users_data": response})
+    
 #______________________________________________________________________________________________________________#
 
 
@@ -763,7 +783,8 @@ async def update_user(
     db.commit()
     db.refresh(user)
     
-    return "User Update Successfully"
+    # return "User Update Successfully"
+    return JSONResponse(content={"message": "User updated successfully"})
 
     # Render the update.html template with updated user details and available roles
     # return templates.TemplateResponse(
@@ -819,12 +840,7 @@ async def forget(
     db: Session = Depends(get_db),
     Authorize: AuthJWT = Depends()
 ):
-    # try:
-    #     Authorize.jwt_required()  # Ensure the request contains a valid JWT
-    #     current_user = Authorize.get_jwt_subject()
-    # except Exception as e:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid or missing token")
-
+ 
     user = db.query(User).filter(User.email == email).first()
     
     if not user:
@@ -1219,3 +1235,434 @@ async def get_web(request: Request):
 
 
 
+
+
+
+
+from fastapi.responses import StreamingResponse
+import io
+import csv
+
+# @app.get("/download_users_csv")
+# def download_users_csv(db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
+#     Authorize.jwt_required()
+#     current_user = Authorize.get_jwt_subject() 
+#     # Retrieve all users
+#     users = db.query(User).all()
+
+#     # Prepare CSV in memory
+#     output = io.StringIO()
+#     csv_writer = csv.writer(output)
+    
+#     # Write header to CSV
+#     csv_writer.writerow(["user_id", "username", "email", "roles", "permissions"])
+
+#     for user in users:
+#         # Get roles associated with the user
+#         user_roles = db.query(UserRole).filter(UserRole.user_id == user.id).all()
+        
+#         roles = []
+#         permissions = set()  # Use a set to avoid duplicates
+#         is_superadmin = False
+#         for user_role in user_roles:
+#             role = db.query(Role).filter(Role.id == user_role.role_id).first()
+#             if role:
+#                 roles.append(role.role_name)
+#                 if role.role_name == "SuperAdmin":  # Check if the role is 'SuperAdmin'
+#                     is_superadmin = True 
+
+#                 # Get permissions for this role
+#                 role_permissions = db.query(RolePermission).filter(RolePermission.role_id == role.id).all()
+#                 for role_permission in role_permissions:
+#                     permission = db.query(Permission).filter(Permission.id == role_permission.permission_id).first()
+#                     if permission:
+#                         permissions.add(permission.permission_name)
+        
+#         if is_superadmin:
+#             continue
+
+#         # Write the user data to the CSV
+#         csv_writer.writerow([user.id, user.username, user.email, ', '.join(roles), ', '.join(permissions)])
+
+#     # Move the pointer to the beginning of the StringIO buffer
+#     output.seek(0)
+
+#     # Return the CSV file as a downloadable file
+#     return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=users_data.csv"})
+
+
+
+
+
+
+@app.get("/download_roles_csv")
+def download_roles_csv(db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
+    Authorize.jwt_required()
+    current_user = Authorize.get_jwt_subject()  # Get the current logged-in user
+   
+    # Fetch the user and their role in a single query
+    user_with_role = (
+        db.query(User, Role)
+        .join(UserRole, User.id == UserRole.user_id)
+        .join(Role, Role.id == UserRole.role_id)
+        .filter(User.username == current_user)
+        .first()
+    )
+
+    if not user_with_role:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User or role not found")
+
+    user, role = user_with_role
+
+    # Check if the user has 'superadmin' role
+    if role.role_name == "SuperAdmin":
+        # Fetch all roles excluding 'superadmin'
+        roles = db.query(Role).filter(Role.role_name != "SuperAdmin").all()
+    elif  role.role_name == "admin":
+        roles = db.query(Role).filter(Role.role_name != "admin", Role.role_name != "SuperAdmin").all()
+    else:
+        roles = [role]
+
+    
+    # Prepare CSV in memory
+    output = io.StringIO()
+    csv_writer = csv.writer(output)
+
+    # Write the header to CSV
+    csv_writer.writerow(["role_id", "role_name"])
+
+    # Write the role data to CSV
+    for role in roles:
+        csv_writer.writerow([role.id, role.role_name])
+
+    # Move the pointer to the beginning of the StringIO buffer
+    output.seek(0)
+
+    # Return the CSV file as a downloadable file
+    return StreamingResponse(output, media_type="text/csv", headers={
+        "Content-Disposition": "attachment; filename=roles.csv"
+    })
+
+
+
+
+
+
+# @app.get("/download_permission_csv")
+# def download_permission_csv(db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
+
+#     Authorize.jwt_required()  # Ensure the request contains a valid JWT
+
+#     permissions = db.query(Permission).all()  # Fetch all permissions
+    
+#      # Prepare CSV in memory
+#     output = io.StringIO()
+#     csv_writer = csv.writer(output)
+
+#     # Write the header to CSV
+#     csv_writer.writerow(["permission_id", "permission_name"])
+    
+#     for permission in permissions:
+#         csv_writer.writerow([permission.id, permission.permission_name])
+#     output.seek(0)
+
+#     return StreamingResponse(output, media_type="text/csv", headers={
+#         "Content-Disposition": "attachment; filename=permission.csv"
+#     })
+
+@app.get("/download_permission_csv")
+def download_permission_csv(db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
+    # Ensure the request contains a valid JWT
+    Authorize.jwt_required()
+
+    # Get the current logged-in user from the JWT token (this is usually the username or user identifier)
+    current_user = Authorize.get_jwt_subject()
+
+    # Fetch the user object from the database using the username (not user.id)
+    user = db.query(User).filter(User.username == current_user).first()  # Use .first() to get a single user
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Fetch the roles assigned to the current user using user.id (not current_user)
+    user_roles = db.query(UserRole).join(Role).filter(UserRole.user_id == user.id).all()  # Use user.id here
+
+    # Initialize a set to store unique permissions
+    permissions_set = set()
+
+    # For each role the user has, fetch the associated permissions
+    for user_role in user_roles:
+        role = user_role.role
+        
+        # Fetch permissions associated with the role
+        role_permissions = db.query(RolePermission).filter(RolePermission.role_id == role.id).all()
+
+        for role_permission in role_permissions:
+            permission = db.query(Permission).filter(Permission.id == role_permission.permission_id).first()
+            if permission:
+                permissions_set.add(permission)  # Add to the set, duplicates will be automatically handled
+
+    # Prepare the CSV in memory
+    output = io.StringIO()
+    csv_writer = csv.writer(output)
+
+    # Write the header for the CSV file
+    csv_writer.writerow(["permission_id", "permission_name"])
+
+    # Write each unique permission into the CSV file
+    for permission in permissions_set:
+        csv_writer.writerow([permission.id, permission.permission_name])
+
+    # Move the pointer to the beginning of the StringIO buffer to prepare for download
+    output.seek(0)
+
+    # Return the CSV as a downloadable file
+    return StreamingResponse(output, media_type="text/csv", headers={
+        "Content-Disposition": "attachment; filename=permissions.csv"
+    })
+
+# _____________________
+
+
+# @app.get("/download_users_csv")
+# def download_users_csv(db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
+#     Authorize.jwt_required()
+#     current_user = Authorize.get_jwt_subject()
+
+#     # Fetch the current user from the database by username (current_user is usually the username)
+#     user = db.query(User).filter(User.username == current_user).first()
+
+#     if not user:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+#     # Fetch the roles assigned to the current user
+#     user_roles = db.query(UserRole).filter(UserRole.user_id == user.id).all()
+
+#     roles = [role.role_name for user_role in user_roles for role in [db.query(Role).filter(Role.id == user_role.role_id).first()]]
+
+#     is_superadmin = "SuperAdmin" in roles
+#     is_admin = "Admin" in roles
+
+#     # Prepare CSV in memory
+#     output = io.StringIO()
+#     csv_writer = csv.writer(output)
+    
+#     # Write header to CSV
+#     csv_writer.writerow(["user_id", "username", "email", "roles", "permissions"])
+
+#     # Get users to include in the CSV based on the current user's role
+#     if is_superadmin:
+#         # If the current user is SuperAdmin, include all users except SuperAdmin
+#         users = db.query(User).filter(User.username != "SuperAdmin").all()
+#     elif is_admin:
+#         # If the current user is Admin, include all users except SuperAdmin and Admin
+#         users = db.query(User).filter(User.username != "SuperAdmin", User.username != "Admin").all()
+#     else:
+#         # If the current user is not SuperAdmin or Admin, include only the current user's entry
+#         users = [user]
+
+#     # Iterate over the selected users to add them to the CSV
+#     for user in users:
+#         # Get roles associated with the user
+#         user_roles = db.query(UserRole).filter(UserRole.user_id == user.id).all()
+        
+#         roles = []
+#         permissions = set()  # Use a set to avoid duplicates
+#         for user_role in user_roles:
+#             role = db.query(Role).filter(Role.id == user_role.role_id).first()
+#             if role:
+#                 roles.append(role.role_name)
+
+#                 # Get permissions for this role
+#                 role_permissions = db.query(RolePermission).filter(RolePermission.role_id == role.id).all()
+#                 for role_permission in role_permissions:
+#                     permission = db.query(Permission).filter(Permission.id == role_permission.permission_id).first()
+#                     if permission:
+#                         permissions.add(permission.permission_name)
+
+#         # Write the user data to the CSV
+#         csv_writer.writerow([user.id, user.username, user.email, ', '.join(roles), ', '.join(permissions)])
+
+#     # Move the pointer to the beginning of the StringIO buffer
+#     output.seek(0)
+
+#     # Return the CSV file as a downloadable file
+#     return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=users_data.csv"})
+
+
+
+# @app.get("/download_users_csv")
+# def download_users_csv(db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
+#     Authorize.jwt_required()
+#     current_user = Authorize.get_jwt_subject()
+
+#     # Fetch the current user from the database by username (current_user is usually the username)
+#     user = db.query(User).filter(User.username == current_user).first()
+
+#     if not user:
+#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+#     # Fetch the roles assigned to the current user
+#     user_roles = db.query(UserRole).filter(UserRole.user_id == user.id).all()
+
+#     roles = [role.role_name for user_role in user_roles for role in [db.query(Role).filter(Role.id == user_role.role_id).first()]]
+
+#     is_superadmin = "SuperAdmin" in roles
+#     is_admin = "Admin" in roles
+ 
+#     # Prepare CSV in memory
+#     output = io.StringIO()
+#     csv_writer = csv.writer(output)
+    
+#     # Write header to CSV
+#     csv_writer.writerow(["user_id", "username", "email", "roles", "permissions"])
+
+#     # Get users to include in the CSV based on the current user's role
+#     if is_superadmin or is_admin:
+#         # If the current user is SuperAdmin, include all users except SuperAdmin
+#         users = db.query(User).filter(User.username != "SuperAdmin").all()
+#     # elif is_admin:
+#     #     # If the current user is Admin, include all users except SuperAdmin
+#     #     users = db.query(User).filter(User.username != "SuperAdmin").all()
+#     else:
+#         # If the current user is not SuperAdmin or Admin, include only the current user's entry
+#         users = [user]
+
+#     # Iterate over the selected users to add them to the CSV
+#     for user in users:
+#         # Get roles associated with the user
+#         user_roles = db.query(UserRole).filter(UserRole.user_id == user.id).all()
+        
+#         roles = []
+#         permissions = set()  # Use a set to avoid duplicates
+#         for user_role in user_roles:
+#             role = db.query(Role).filter(Role.id == user_role.role_id).first()
+#             if role:
+#                 roles.append(role.role_name)
+
+#                 # Get permissions for this role
+#                 role_permissions = db.query(RolePermission).filter(RolePermission.role_id == role.id).all()
+#                 for role_permission in role_permissions:
+#                     permission = db.query(Permission).filter(Permission.id == role_permission.permission_id).first()
+#                     if permission:
+#                         permissions.add(permission.permission_name)
+
+#         # Write the user data to the CSV
+#         csv_writer.writerow([user.id, user.username, user.email, ', '.join(roles), ', '.join(permissions)])
+
+#     # Move the pointer to the beginning of the StringIO buffer
+#     output.seek(0)
+
+#     # Return the CSV file as a downloadable file
+#     return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=users_data.csv"})
+
+
+
+# @app.get("/download_users_csv")
+# def download_users_csv(db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
+#     Authorize.jwt_required()
+#     current_user = Authorize.get_jwt_subject() 
+#     # Retrieve all users
+#     users = db.query(User).all()
+
+#     # Prepare CSV in memory
+#     output = io.StringIO()
+#     csv_writer = csv.writer(output)
+    
+#     # Write header to CSV
+#     csv_writer.writerow(["user_id", "username", "email", "roles", "permissions"])
+
+#     for user in users:
+#         # Get roles associated with the user
+#         user_roles = db.query(UserRole).filter(UserRole.user_id == user.id).all()
+        
+#         roles = []
+#         permissions = set()  # Use a set to avoid duplicates
+#         is_superadmin = False
+#         for user_role in user_roles:
+#             role = db.query(Role).filter(Role.id == user_role.role_id).first()
+#             if role:
+#                 roles.append(role.role_name)
+#                 if role.role_name == "SuperAdmin":  # Check if the role is 'SuperAdmin'
+#                     is_superadmin = True 
+
+#                 # Get permissions for this role
+#                 role_permissions = db.query(RolePermission).filter(RolePermission.role_id == role.id).all()
+#                 for role_permission in role_permissions:
+#                     permission = db.query(Permission).filter(Permission.id == role_permission.permission_id).first()
+#                     if permission:
+#                         permissions.add(permission.permission_name)
+        
+#         if is_superadmin:
+#             continue
+
+#         # Write the user data to the CSV
+#         csv_writer.writerow([user.id, user.username, user.email, ', '.join(roles), ', '.join(permissions)])
+
+#     # Move the pointer to the beginning of the StringIO buffer
+#     output.seek(0)
+
+#     # Return the CSV file as a downloadable file
+#     return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=users_data.csv"})
+
+
+@app.get("/download_users_csv")
+def download_users_csv(db: Session = Depends(get_db), Authorize: AuthJWT = Depends()):
+    Authorize.jwt_required()
+    current_user = Authorize.get_jwt_subject()
+
+    # Retrieve the current user from the database
+    user = db.query(User).filter(User.username == current_user).first()
+
+    if not user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    # Fetch the roles assigned to the current user
+    user_roles = db.query(UserRole).filter(UserRole.user_id == user.id).all()
+
+    roles = [role.role_name for user_role in user_roles for role in [db.query(Role).filter(Role.id == user_role.role_id).first()]]
+
+    is_superadmin = "SuperAdmin" in roles
+    is_admin = "admin" in roles
+
+    # Prepare CSV in memory
+    output = io.StringIO()
+    csv_writer = csv.writer(output)
+    
+    # Write header to CSV
+    csv_writer.writerow(["user_id", "username", "email", "roles", "permissions"])
+
+    if is_superadmin or is_admin:
+        # If the current user is SuperAdmin, include all users except SuperAdmin
+        users = db.query(User).filter(User.username != "SuperAdmin").all()
+    else:
+        # If the current user is not SuperAdmin or Admin, include only the current user's entry
+        users = [user]  # Only add the current user's data
+
+    # Iterate over the selected users to add them to the CSV
+    for user in users:
+        # Get roles associated with the user
+        user_roles = db.query(UserRole).filter(UserRole.user_id == user.id).all()
+        
+        roles = []
+        permissions = set()  # Use a set to avoid duplicates
+        for user_role in user_roles:
+            role = db.query(Role).filter(Role.id == user_role.role_id).first()
+            if role:
+                roles.append(role.role_name)
+
+                # Get permissions for this role
+                role_permissions = db.query(RolePermission).filter(RolePermission.role_id == role.id).all()
+                for role_permission in role_permissions:
+                    permission = db.query(Permission).filter(Permission.id == role_permission.permission_id).first()
+                    if permission:
+                        permissions.add(permission.permission_name)
+
+        # Write the user data to the CSV
+        csv_writer.writerow([user.id, user.username, user.email, ', '.join(roles), ', '.join(permissions)])
+
+    # Move the pointer to the beginning of the StringIO buffer
+    output.seek(0)
+
+    # Return the CSV file as a downloadable file
+    return StreamingResponse(output, media_type="text/csv", headers={"Content-Disposition": "attachment; filename=users_data.csv"})
