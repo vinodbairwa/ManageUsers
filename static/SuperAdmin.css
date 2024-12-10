@@ -306,3 +306,66 @@ tr:hover {
             display: block;  /* Show dropdown content */
         }
         
+
+
+
+/* modal properties */
+
+#modalBackdrop {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent black */
+    z-index: 1000; /* Make sure the backdrop is above other content */
+}
+
+/* Modal box styling */
+#userInputModal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1001; /* Modal should be above the backdrop */
+}
+
+/* Modal close button styling */
+#closeModal {
+    background-color: #ff4b5c;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#closeModal:hover {
+    background-color: #ff1a2d;
+}
+
+/* Styling for input and submit button */
+#userInputModal input,
+#userInputModal button {
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+#userInputModal button {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+}
+
+#userInputModal button:hover {
+    background-color: #45a049;
+}

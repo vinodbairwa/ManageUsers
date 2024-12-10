@@ -107,3 +107,9 @@ document.getElementById('downloadUserDataCsvBtn').addEventListener('click', () =
 document.getElementById('downloadPermissionCsvBtn').addEventListener('click', () => {
     downloadCsv('/download_permission_csv', 'permissions.csv');  // Call function with appropriate API endpoint and filename
 });
+
+
+
+
+
+

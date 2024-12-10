@@ -25,6 +25,8 @@
                 <a href="#" onclick="goToPermissionPage('per_role')">RolePermission Assign</a>
 
                 <a href="#" onclick="goToPermissionPage('ItselfUpdate')">Edit Super Admin</a>
+                  <!--  single user downlode csv file button -->
+                <a id="downloadButton">Download User Data</a> 
 
                 <a href="{{url_for('get_web')}}">Subscription</a>
         
@@ -39,10 +41,20 @@
                 <button id="logoutButton">Logout</button>
             </nav>
         </div>
-
+            
             <a href="#" onclick="goToPermissionPage('changePassword')" class="button-link">Change Password</a>
           
+              <!-- Modal backdrop -->
+              <div id="modalBackdrop"></div>
         
+              <!-- Modal content for user input -->
+              <div id="userInputModal">
+                  <button id="closeModal">X</button>
+                  <label for="userIdInput">Enter User ID:</label>
+                  <input type="number" id="userIdInput" placeholder="Enter user ID" />
+                  <button id="submitUserId">Download</button>
+              </div>
+
         <!-- Table to display users data -->
         <div class="content-wrapper">
             <table id="users-table">
@@ -73,6 +85,8 @@
    <script src="static/downlodePdf.js"></script>
 
    <script src="static/EditDeleteUpdateDashbord.js"></script>
+
+   <script src="static\dawnlode_single_user_csv.js"></script>
    
     <!-- <script>
         document.addEventListener("DOMContentLoaded", function() {
